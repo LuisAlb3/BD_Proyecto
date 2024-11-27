@@ -1,94 +1,41 @@
 const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors');
 const { MongoClient } = require('mongodb');
+const cors = require('cors');
+const bodyParser = require('body-parser');
 
-// Configuración de la aplicación
 const app = express();
-const PORT = 5000;
-app.use(bodyParser.json());
 app.use(cors());
+app.use(bodyParser.json());
 
-// Conexión a MongoDB
-const url = 'mongodb://localhost:27017';
-const dbName = 'inventario';
-let db, productosCollection;
+// Reemplaza con tu cadena de conexión a MongoDB Atlas
+const url = 'mongodb+srv://luis:miContraseña123@cluster0.mongodb.net/inventario?retryWrites=true&w=majority';
 
-MongoClient.connect(url, { useUnifiedTopology: true })
-    .then(client => {
-        console.log('Conectado a MongoDB');
-        db = client.db(dbName);
-        productosCollection = db.collection('productos');
-    })
-    .catch(err => console.error(err));
+const client = new MongoClient(url, { useNewUrlParser: true, useUnifiedTopology: true });
 
-// Obtener todos los productos
-app.get('/inventario', async (req, res) => {
-    try {
-        const productos = await productosCollection.find({}, { projection: { _id: 0 } }).toArray();
-        res.status(200).json(productos);
-    } catch (err) {
-        res.status(500).json({ error: 'Error al obtener productos' });
-    }
-});
+client.connect()
+    .then(() => {
+        console.log('Conexión a MongoDB exitosa');
+        const db = client.db('inventario');  // Nombre de la base de datos
+        const productosCollection = db.collection('productos');  // Colección de productos
 
-// Agregar un producto
-app.post('/inventario', async (req, res) => {
-    const { nombre, cantidad, precio } = req.body;
-
-    if (nombre && cantidad && precio) {
-        try {
-            await productosCollection.insertOne({ nombre, cantidad, precio });
-            res.status(201).json({ mensaje: 'Producto agregado con éxito' });
-        } catch (err) {
-            res.status(500).json({ error: 'Error al agregar producto' });
-        }
-    } else {
-        res.status(400).json({ error: 'Datos inválidos' });
-    }
-});
-
-// Eliminar un producto
-app.delete('/inventario/:nombre', async (req, res) => {
-    const { nombre } = req.params;
-
-    try {
-        const result = await productosCollection.deleteOne({ nombre });
-        if (result.deletedCount > 0) {
-            res.status(200).json({ mensaje: 'Producto eliminado con éxito' });
-        } else {
-            res.status(404).json({ error: 'Producto no encontrado' });
-        }
-    } catch (err) {
-        res.status(500).json({ error: 'Error al eliminar producto' });
-    }
-});
-
-// Actualizar un producto
-app.put('/inventario/:nombre', async (req, res) => {
-    const { nombre } = req.params;
-    const { cantidad } = req.body;
-
-    if (cantidad) {
-        try {
-            const result = await productosCollection.updateOne(
-                { nombre },
-                { $set: { cantidad } }
-            );
-            if (result.matchedCount > 0) {
-                res.status(200).json({ mensaje: 'Producto actualizado con éxito' });
-            } else {
-                res.status(404).json({ error: 'Producto no encontrado' });
+        // Definir la ruta para obtener todos los productos
+        app.get('/inventario', async (req, res) => {
+            try {
+                const productos = await productosCollection.find({}).toArray();  // Obtener productos
+                res.json(productos);  // Responder con los productos
+            } catch (error) {
+                console.log('Error al obtener productos:', error);
+                res.status(500).json({ error: 'Error al obtener productos' });
             }
-        } catch (err) {
-            res.status(500).json({ error: 'Error al actualizar producto' });
-        }
-    } else {
-        res.status(400).json({ error: 'Datos inválidos' });
-    }
-});
+        });
 
-// Iniciar el servidor
-app.listen(PORT, () => {
-    console.log(`Servidor corriendo en http://localhost:${PORT}`);
+    })
+    .catch((error) => {
+        console.log('Error al conectar a MongoDB:', error);
+    });
+
+// Configurar el puerto para escuchar solicitudes
+const port = process.env.PORT || 5000;
+app.listen(port, () => {
+    console.log(`Servidor corriendo en http://localhost:${port}`);
 });

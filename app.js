@@ -8,7 +8,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // Cadena de conexión a MongoDB Atlas
-const url = 'mongodb://luis:luis1234@cluster0.mongodb.net/?ssl=true&replicaSet=atlas-55hazr-shard-0&authSource=admin&retryWrites=true&w=majority&appName=Cluster0';
+const url = "mongodb+srv://luis:<luis1234>@cluster0.szyc1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 
 const client = new MongoClient(url, { useNewUrlParser: true, useUnifiedTopology: true });
 

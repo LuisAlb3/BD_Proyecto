@@ -1,20 +1,27 @@
 const express = require('express');
-const { MongoClient } = require('mongodb');
+const { MongoClient, ServerApiVersion } = require('mongodb');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const path = require('path');  // Para manejar rutas de archivos estáticos
+const path = require('path');  // Para manejar las rutas de archivos estáticos
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// Servir archivos estáticos desde la raíz del proyecto
+// Servir archivos estáticos desde la raíz del proyecto (donde está index.html)
 app.use(express.static(path.join(__dirname)));
 
-// Cadena de conexión a MongoDB Atlas
-const url = 'mongodb://luis:luis1234@cluster0.mongodb.net/?ssl=true&replicaSet=atlas-55hazr-shard-0&authSource=admin&retryWrites=true&w=majority&appName=Cluster0';
+// Cadena de conexión a MongoDB Atlas (reemplaza <db_password> con tu contraseña)
+const uri = "mongodb+srv://luis:luis1234@cluster0.szyc1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
-const client = new MongoClient(url, { useNewUrlParser: true, useUnifiedTopology: true });
+// Crea un cliente de MongoDB con la configuración de la API estable
+const client = new MongoClient(uri, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  }
+});
 
 client.connect()
     .then(() => {
@@ -22,7 +29,12 @@ client.connect()
         const db = client.db('inventario');  // Nombre de la base de datos
         const productosCollection = db.collection('productos');  // Colección de productos
 
-        // Ruta para obtener todos los productos
+        // Ruta para la raíz (/), donde servirás el archivo index.html
+        app.get('/', (req, res) => {
+            res.sendFile(path.join(__dirname, 'index.html'));  // Sirve el archivo index.html
+        });
+
+        // Ruta para obtener todos los productos desde MongoDB
         app.get('/inventario', async (req, res) => {
             try {
                 const productos = await productosCollection.find({}).toArray();  // Obtener productos

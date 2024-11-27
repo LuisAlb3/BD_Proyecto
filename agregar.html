@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agregar Producto</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f9f9f9; }
+        .container { max-width: 600px; margin: 50px auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }
+        h1 { text-align: center; color: #444; }
+        label, input, button { display: block; width: 100%; margin-bottom: 15px; }
+        input, button { padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        button { background-color: #4CAF50; color: white; font-size: 16px; cursor: pointer; }
+        button:hover { background-color: #45a049; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Agregar Nuevo Producto</h1>
+        <label for="nombre">Nombre:</label>
+        <input type="text" id="nombre" placeholder="Nombre del producto" required>
+        <label for="cantidad">Cantidad:</label>
+        <input type="number" id="cantidad" placeholder="Cantidad" required>
+        <label for="precio">Precio:</label>
+        <input type="number" id="precio" step="0.01" placeholder="Precio" required>
+        <button onclick="agregarProducto()">Agregar</button>
+    </div>
+
+    <script>
+        // Función para agregar un producto
+        async function agregarProducto() {
+            const nombre = document.getElementById('nombre').value;
+            const cantidad = document.getElementById('cantidad').value;
+            const precio = document.getElementById('precio').value;
+
+            if (nombre && cantidad && precio) {
+                const response = await fetch('http://localhost:5000/inventario', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nombre, cantidad, precio })
+                });
+
+                if (response.ok) {
+                    alert('Producto agregado con éxito');
+                    window.location.href = 'index.html'; // Redirige a la página principal
+                } else {
+                    alert('Error al agregar el producto');
+                }
+            } else {
+                alert('Por favor, complete todos los campos');
+            }
+        }
+    </script>
+</body>
+</html>

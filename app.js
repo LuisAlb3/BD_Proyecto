@@ -12,7 +12,7 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname)));
 
 // Cadena de conexión a MongoDB Atlas (reemplaza <db_password> con tu contraseña)
-const uri = "mongodb+srv://luis:<luis1234>@cluster0.szyc1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+const uri = "mongodb+srv://luis:luis1234@cluster0.szyc1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 
 // Crea un cliente de MongoDB con la configuración de la API estable
 const client = new MongoClient(uri, {

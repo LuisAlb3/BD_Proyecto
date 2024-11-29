@@ -16,12 +16,11 @@ const uri = "mongodb+srv://luis:luis1234@cluster0.szyc1.mongodb.net/?retryWrites
 
 // Crea un cliente de MongoDB con la configuración de la API estable
 const client = new MongoClient(uri, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  }
-});
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    tlsAllowInvalidCertificates: false,  // Asegura certificados válidos
+    tlsAllowInvalidHostnames: false,     // Valida el hostname
+  });
 
 client.connect()
     .then(() => {

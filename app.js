@@ -1,11 +1,15 @@
 const express = require('express');
 const { MongoClient } = require('mongodb');
 const bodyParser = require('body-parser');
+const path = require('path');
 
 const app = express();
 const port = process.env.PORT || 5000;
 
 app.use(bodyParser.json()); // Para procesar solicitudes JSON
+
+// Servir archivos estáticos desde la raíz del proyecto
+app.use(express.static(path.join(__dirname)));
 
 // Conectar a MongoDB
 const uri = "mongodb+srv://luis:luis1234@cluster0.szyc1.mongodb.net/inventario?retryWrites=true&w=majority";
@@ -63,6 +67,24 @@ client.connect()
             } catch (error) {
                 console.error('Error al actualizar producto:', error);
                 res.status(500).json({ error: 'Error al actualizar el producto' });
+            }
+        });
+
+        // Ruta para eliminar un producto
+        app.delete('/inventario/:nombre', async (req, res) => {
+            const { nombre } = req.params;
+
+            try {
+                const result = await productosCollection.deleteOne({ nombre });
+
+                if (result.deletedCount > 0) {
+                    res.status(200).json({ message: 'Producto eliminado con éxito' });
+                } else {
+                    res.status(404).json({ message: 'Producto no encontrado' });
+                }
+            } catch (error) {
+                console.error('Error al eliminar producto:', error);
+                res.status(500).json({ error: 'Error al eliminar el producto' });
             }
         });
 

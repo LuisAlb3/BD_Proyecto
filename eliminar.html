@@ -40,21 +40,35 @@
     </div>
 
     <script>
+        const API_URL = 'https://bd-proyecto.onrender.com/inventario'; // URL de la API en Render
+
         // Obtener los tres últimos productos agregados
         async function obtenerUltimosProductos() {
-            const response = await fetch('http://localhost:5000/inventario');
-            const productos = await response.json();
-            const ultimosProductos = productos.slice(-3).reverse(); // Toma los últimos 3 productos
-            mostrarProductos(ultimosProductos);
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) throw new Error('Error al obtener productos');
+                const productos = await response.json();
+                const ultimosProductos = productos.slice(-3).reverse(); // Toma los últimos 3 productos
+                mostrarProductos(ultimosProductos);
+            } catch (error) {
+                console.error(error);
+                alert('No se pudieron cargar los productos.');
+            }
         }
 
         // Buscar un producto específico
         async function buscarProducto() {
-            const query = document.getElementById('buscar').value.toLowerCase();
-            const response = await fetch('http://localhost:5000/inventario');
-            const productos = await response.json();
-            const resultados = productos.filter(p => p.nombre.toLowerCase().includes(query));
-            mostrarProductos(resultados);
+            try {
+                const query = document.getElementById('buscar').value.toLowerCase();
+                const response = await fetch(API_URL);
+                if (!response.ok) throw new Error('Error al buscar productos');
+                const productos = await response.json();
+                const resultados = productos.filter(p => p.nombre.toLowerCase().includes(query));
+                mostrarProductos(resultados);
+            } catch (error) {
+                console.error(error);
+                alert('No se pudieron buscar los productos.');
+            }
         }
 
         // Mostrar productos en la tabla
@@ -76,12 +90,14 @@
 
         // Eliminar un producto
         async function eliminarProducto(nombre) {
-            const response = await fetch(`http://localhost:5000/inventario/${nombre}`, { method: 'DELETE' });
-            if (response.ok) {
+            try {
+                const response = await fetch(`${API_URL}/${nombre}`, { method: 'DELETE' });
+                if (!response.ok) throw new Error('Error al eliminar el producto');
                 alert('Producto eliminado con éxito');
                 obtenerUltimosProductos(); // Actualiza la lista
-            } else {
-                alert('Error al eliminar el producto');
+            } catch (error) {
+                console.error(error);
+                alert('No se pudo eliminar el producto.');
             }
         }
 

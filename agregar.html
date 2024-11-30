@@ -29,12 +29,26 @@
     <script>
         // Función para agregar un producto
         async function agregarProducto() {
-            const nombre = document.getElementById('nombre').value;
-            const cantidad = document.getElementById('cantidad').value;
-            const precio = document.getElementById('precio').value;
+            const nombre = document.getElementById('nombre').value.trim();
+            const cantidad = parseInt(document.getElementById('cantidad').value, 10);
+            const precio = parseFloat(document.getElementById('precio').value);
 
-            if (nombre && cantidad && precio) {
-                const response = await fetch('http://localhost:5000/inventario', {
+            // Validar que los campos no estén vacíos y que cantidad/precio sean válidos
+            if (!nombre) {
+                alert('Por favor, ingrese el nombre del producto.');
+                return;
+            }
+            if (!cantidad || cantidad <= 0) {
+                alert('Por favor, ingrese una cantidad válida (mayor a 0).');
+                return;
+            }
+            if (!precio || precio <= 0) {
+                alert('Por favor, ingrese un precio válido (mayor a 0).');
+                return;
+            }
+
+            try {
+                const response = await fetch('https://bd-proyecto.onrender.com/inventario', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ nombre, cantidad, precio })
@@ -46,8 +60,9 @@
                 } else {
                     alert('Error al agregar el producto');
                 }
-            } else {
-                alert('Por favor, complete todos los campos');
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Hubo un problema al conectar con el servidor.');
             }
         }
     </script>

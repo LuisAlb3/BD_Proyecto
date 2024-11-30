@@ -27,13 +27,11 @@
     </div>
 
     <script>
-        // Función para agregar un producto
         async function agregarProducto() {
             const nombre = document.getElementById('nombre').value.trim();
             const cantidad = parseInt(document.getElementById('cantidad').value, 10);
             const precio = parseFloat(document.getElementById('precio').value);
 
-            // Validar que los campos no estén vacíos y que cantidad/precio sean válidos
             if (!nombre) {
                 alert('Por favor, ingrese el nombre del producto.');
                 return;

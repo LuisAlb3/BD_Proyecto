@@ -40,22 +40,27 @@
     </div>
 
     <script>
-        // Cargar productos dinámicamente
+        // Cargar productos dinámicamente desde la API en Render
         async function obtenerProductos() {
-            const response = await fetch('http://localhost:5000/inventario');
-            const productos = await response.json();
-            const productosTable = document.getElementById('productos');
-            productosTable.innerHTML = '';
+            try {
+                const response = await fetch('https://bd-proyecto.onrender.com/inventario'); // URL de la API en Render
+                if (!response.ok) throw new Error(`Error en la solicitud: ${response.status}`);
+                const productos = await response.json();
+                const productosTable = document.getElementById('productos');
+                productosTable.innerHTML = '';
 
-            productos.forEach(producto => {
-                const row = `
-                    <tr>
-                        <td>${producto.nombre}</td>
-                        <td>${producto.cantidad}</td>
-                        <td>${producto.precio}</td>
-                    </tr>`;
-                productosTable.innerHTML += row;
-            });
+                productos.forEach(producto => {
+                    const row = `
+                        <tr>
+                            <td>${producto.nombre}</td>
+                            <td>${producto.cantidad}</td>
+                            <td>${producto.precio}</td>
+                        </tr>`;
+                    productosTable.innerHTML += row;
+                });
+            } catch (error) {
+                console.error('Error al obtener productos:', error);
+            }
         }
 
         // Cargar productos al inicio

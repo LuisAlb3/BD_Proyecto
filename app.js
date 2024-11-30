@@ -1,56 +1,76 @@
 const express = require('express');
-const { MongoClient, ServerApiVersion } = require('mongodb');
-const cors = require('cors');
+const { MongoClient } = require('mongodb');
 const bodyParser = require('body-parser');
-const path = require('path');  // Para manejar las rutas de archivos estáticos
 
 const app = express();
-app.use(cors());
-app.use(bodyParser.json());
+const port = process.env.PORT || 5000;
 
-// Servir archivos estáticos desde la raíz del proyecto (donde está index.html)
-app.use(express.static(path.join(__dirname)));
+app.use(bodyParser.json()); // Para procesar solicitudes JSON
 
-// Cadena de conexión a MongoDB Atlas (reemplaza <db_password> con tu contraseña)
-const uri = "mongodb+srv://luis:luis1234@cluster0.szyc1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-
-// Crea un cliente de MongoDB con la configuración de la API estable
-const client = new MongoClient(uri, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    tlsAllowInvalidCertificates: false,  // Asegura certificados válidos
-    tlsAllowInvalidHostnames: false,     // Valida el hostname
-  });
+// Conectar a MongoDB
+const uri = "mongodb+srv://luis:luis1234@cluster0.szyc1.mongodb.net/inventario?retryWrites=true&w=majority";
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
 client.connect()
     .then(() => {
-        console.log('Conexión a MongoDB exitosa');
-        const db = client.db('inventario');  // Nombre de la base de datos
-        const productosCollection = db.collection('productos');  // Colección de productos
+        const db = client.db('inventario');
+        const productosCollection = db.collection('productos');
 
-        // Ruta para la raíz (/), donde servirás el archivo index.html
-        app.get('/', (req, res) => {
-            res.sendFile(path.join(__dirname, 'index.html'));  // Sirve el archivo index.html
+        // Ruta para agregar un producto
+        app.post('/inventario', async (req, res) => {
+            const { nombre, cantidad, precio } = req.body;
+            if (!nombre || !cantidad || !precio) {
+                return res.status(400).json({ error: 'Faltan datos en la solicitud' });
+            }
+
+            try {
+                const producto = { nombre, cantidad, precio };
+                const result = await productosCollection.insertOne(producto);
+                res.status(201).json({ message: 'Producto agregado con éxito', producto: result.ops[0] });
+            } catch (error) {
+                console.error('Error al agregar producto:', error);
+                res.status(500).json({ error: 'Error al agregar el producto' });
+            }
         });
 
-        // Ruta para obtener todos los productos desde MongoDB
+        // Ruta para obtener todos los productos
         app.get('/inventario', async (req, res) => {
             try {
-                const productos = await productosCollection.find({}).toArray();  // Obtener productos
-                res.json(productos);  // Responder con los productos
+                const productos = await productosCollection.find({}).toArray();
+                res.status(200).json(productos);
             } catch (error) {
-                console.log('Error al obtener productos:', error);
+                console.error('Error al obtener productos:', error);
                 res.status(500).json({ error: 'Error al obtener productos' });
             }
         });
 
+        // Ruta para actualizar un producto
+        app.put('/inventario/:nombre', async (req, res) => {
+            const { nombre } = req.params;
+            const { cantidad } = req.body;
+
+            try {
+                const result = await productosCollection.updateOne(
+                    { nombre },
+                    { $set: { cantidad } }
+                );
+
+                if (result.modifiedCount > 0) {
+                    res.status(200).json({ message: 'Producto actualizado con éxito' });
+                } else {
+                    res.status(404).json({ message: 'Producto no encontrado' });
+                }
+            } catch (error) {
+                console.error('Error al actualizar producto:', error);
+                res.status(500).json({ error: 'Error al actualizar el producto' });
+            }
+        });
+
+        // Escuchar en el puerto
+        app.listen(port, () => {
+            console.log(`Servidor corriendo en http://localhost:${port}`);
+        });
     })
     .catch((error) => {
-        console.log('Error al conectar a MongoDB:', error);
+        console.error('Error al conectar a MongoDB:', error);
     });
-
-// Configurar el puerto para escuchar solicitudes
-const port = process.env.PORT || 5000;
-app.listen(port, () => {
-    console.log(`Servidor corriendo en http://localhost:${port}`);
-});
